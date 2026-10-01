@@ -56,6 +56,7 @@ const HELP = `Бот склада <b>secretwr</b>
 /boxes — выбрать коробку
 /newbox — создать новую коробку
 /status — текущая коробка
+/whoami — ваш Telegram ID
 /help — справка`;
 
 function isAllowedChat(chatId: number): boolean {
@@ -261,7 +262,18 @@ async function handleCommand(message: TelegramMessage, text: string) {
   const cmd = command.toLowerCase().replace(/@\w+$/, "");
 
   if (cmd === "/start" || cmd === "/help") {
-    await sendMessage(chatId, HELP);
+    await sendMessage(
+      chatId,
+      `${HELP}\n\nВаш Telegram ID: <code>${chatId}</code>`,
+    );
+    return;
+  }
+
+  if (cmd === "/whoami") {
+    await sendMessage(
+      chatId,
+      `Ваш Telegram ID: <code>${chatId}</code>`,
+    );
     return;
   }
 
