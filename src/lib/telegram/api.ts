@@ -42,6 +42,31 @@ export async function sendMessage(
   });
 }
 
+export async function answerCallbackQuery(
+  callbackQueryId: string,
+  text?: string,
+) {
+  return telegramCall("answerCallbackQuery", {
+    callback_query_id: callbackQueryId,
+    text,
+  });
+}
+
+export async function editMessageText(
+  chatId: number,
+  messageId: number,
+  text: string,
+  extra?: Record<string, unknown>,
+) {
+  return telegramCall("editMessageText", {
+    chat_id: chatId,
+    message_id: messageId,
+    text,
+    parse_mode: "HTML",
+    ...extra,
+  });
+}
+
 export async function downloadTelegramFile(fileId: string): Promise<{
   buffer: Buffer;
   filePath: string;
@@ -77,7 +102,7 @@ export async function setTelegramWebhook(url: string, secretToken: string) {
   return telegramCall("setWebhook", {
     url,
     secret_token: secretToken,
-    allowed_updates: ["message"],
+    allowed_updates: ["message", "callback_query"],
     drop_pending_updates: false,
   });
 }
