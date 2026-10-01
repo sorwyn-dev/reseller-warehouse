@@ -133,3 +133,17 @@ export interface DashboardStats {
   totalRevenue: number;
   totalNetProfit: number;
 }
+
+export interface MonthlyStats {
+  key: string;
+  year: number;
+  month: number;
+  label: string;
+  revenue: number;
+  soldCost: number;
+  saleExpensesTotal: number;
+  netProfit: number;
+  soldCount: number;
+  boxesReceived: number;
+  purchaseInvested: number;
+}

@@ -1,6 +1,6 @@
-# Ресейл-склад
+# secretwr
 
-Простой онлайн-склад для ресейла: коробки, индивидуальная закупка вещей, доставка и учёт чистой прибыли.
+Онлайн-склад магазина secretwr: коробки, индивидуальная закупка вещей, доставка и учёт чистой прибыли.
 
 ## Стек
 
@@ -20,12 +20,15 @@ npm run dev
 
 ## Supabase
 
-1. Создайте проект в Supabase.
-2. Скопируйте `.env.example` → `.env.local` и заполните ключи.
-3. Выполните SQL из `supabase/migrations/001_initial.sql` в SQL Editor.
-4. Перезапустите `npm run dev`.
+1. Скопируйте `.env.example` → `.env.local` и укажите:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+2. В [SQL Editor](https://supabase.com/dashboard/project/_/sql/new) выполните файл
+   `supabase/migrations/001_initial.sql`.
+3. Перезапустите `npm run dev`.
 
-Пока переменные не заданы, приложение автоматически сохраняет данные локально в `data/store.json`.
+Клиенты находятся в `src/utils/supabase/` (browser / server / middleware).
+Пока таблицы не созданы, запросы к Supabase вернут ошибку — сначала примените миграцию.
 
 ## Тесты
 

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calcBoxFinance,
   calcDashboardStats,
+  calcMonthlyStats,
   calcProductProfit,
   calcUnitCost,
   getEffectiveCost,
@@ -290,6 +291,82 @@ describe("calcDashboardStats", () => {
     expect(stats.stockCount).toBe(2);
     expect(stats.totalRevenue).toBe(30);
     expect(stats.totalNetProfit).toBe(20);
+  });
+});
+
+describe("calcMonthlyStats", () => {
+  it("группирует выручку и прибыль по месяцу продажи", () => {
+    const january = makeBox({
+      id: "box-1",
+      received_at: "2026-01-15",
+      shipping_cost: 0,
+      additional_expenses: 0,
+    });
+    const february = makeBox({
+      id: "box-2",
+      received_at: "2026-02-01",
+      shipping_cost: 10,
+      additional_expenses: 0,
+    });
+
+    const months = calcMonthlyStats([
+      {
+        box: january,
+        products: [
+          makeProduct({
+            id: "p1",
+            purchase_price: 10,
+            status: "sold",
+            sale: makeSale({
+              product_id: "p1",
+              sale_price: 40,
+              sold_at: "2026-01-20",
+              commission: 4,
+              sale_expenses: 1,
+              frozen_unit_cost: 10,
+              frozen_purchase_price: 10,
+              frozen_shipping_share: 0,
+              frozen_additional_share: 0,
+            }),
+          }),
+          makeProduct({
+            id: "p2",
+            purchase_price: 20,
+            status: "sold",
+            sale: makeSale({
+              product_id: "p2",
+              sale_price: 50,
+              sold_at: "2026-02-05",
+              frozen_unit_cost: 20,
+              frozen_purchase_price: 20,
+              frozen_shipping_share: 0,
+              frozen_additional_share: 0,
+            }),
+          }),
+        ],
+      },
+      {
+        box: february,
+        products: [makeProduct({ id: "p3", box_id: "box-2", purchase_price: 15 })],
+      },
+    ]);
+
+    expect(months.map((m) => m.key)).toEqual(["2026-02", "2026-01"]);
+
+    const feb = months.find((m) => m.key === "2026-02")!;
+    expect(feb.revenue).toBe(50);
+    expect(feb.netProfit).toBe(30);
+    expect(feb.soldCount).toBe(1);
+    expect(feb.boxesReceived).toBe(1);
+    expect(feb.purchaseInvested).toBe(25);
+
+    const jan = months.find((m) => m.key === "2026-01")!;
+    expect(jan.revenue).toBe(40);
+    expect(jan.saleExpensesTotal).toBe(5);
+    expect(jan.netProfit).toBe(25);
+    expect(jan.soldCount).toBe(1);
+    expect(jan.boxesReceived).toBe(1);
+    expect(jan.purchaseInvested).toBe(30);
   });
 });
 

@@ -14,8 +14,8 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Ресейл-склад",
-  description: "Учёт коробок, товаров и прибыли для ресейла",
+  title: "secretwr",
+  description: "Учёт коробок, товаров и прибыли — secretwr",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

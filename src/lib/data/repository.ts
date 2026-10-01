@@ -1,4 +1,5 @@
-import { createSupabaseClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/client";
+import { createClient } from "@/utils/supabase/server";
 import { calcUnitCost, nextBoxNumber } from "@/lib/finance";
 import { todayISODate } from "@/lib/utils";
 import type {
@@ -14,6 +15,11 @@ import type {
   UpdateProductInput,
 } from "@/lib/types";
 import * as local from "@/lib/data/local-store";
+
+async function getSupabase() {
+  if (!isSupabaseConfigured()) return null;
+  return createClient();
+}
 
 function mapSale(row: Record<string, unknown>): Sale {
   return {
@@ -65,7 +71,7 @@ function mapBox(row: Record<string, unknown>, products: ProductWithSale[] = []):
 }
 
 async function fetchBoxWithProducts(boxId: string): Promise<BoxWithProducts | null> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.getBox(boxId);
 
   const { data: box, error } = await supabase
@@ -109,7 +115,7 @@ async function fetchBoxWithProducts(boxId: string): Promise<BoxWithProducts | nu
 }
 
 export async function listBoxes(): Promise<BoxWithProducts[]> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.listBoxes();
 
   const { data: boxes, error } = await supabase
@@ -158,7 +164,7 @@ export async function getBox(id: string): Promise<BoxWithProducts | null> {
 }
 
 export async function createBox(input: CreateBoxInput): Promise<BoxWithProducts> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.createBox(input);
 
   const { data: existing, error: existingError } = await supabase
@@ -188,7 +194,7 @@ export async function updateBox(
   id: string,
   input: UpdateBoxInput,
 ): Promise<BoxWithProducts> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.updateBox(id, input);
 
   const { error } = await supabase.from("boxes").update(input).eq("id", id);
@@ -200,7 +206,7 @@ export async function updateBox(
 }
 
 export async function deleteBox(id: string): Promise<void> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.deleteBox(id);
 
   const { error } = await supabase.from("boxes").delete().eq("id", id);
@@ -211,7 +217,7 @@ export async function addProduct(
   boxId: string,
   input: CreateProductInput,
 ): Promise<ProductWithSale> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.addProduct(boxId, input);
 
   const { data, error } = await supabase
@@ -237,7 +243,7 @@ export async function addProducts(
   boxId: string,
   inputs: CreateProductInput[],
 ): Promise<ProductWithSale[]> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.addProducts(boxId, inputs);
 
   const payload = inputs.map((input) => ({
@@ -264,7 +270,7 @@ export async function updateProduct(
   id: string,
   input: UpdateProductInput,
 ): Promise<ProductWithSale> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.updateProduct(id, input);
 
   const { error } = await supabase.from("products").update(input).eq("id", id);
@@ -288,7 +294,7 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string): Promise<void> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.deleteProduct(id);
 
   const { data: product, error: productError } = await supabase
@@ -308,7 +314,7 @@ export async function sellProduct(
   productId: string,
   input: CreateSaleInput,
 ): Promise<ProductWithSale> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.sellProduct(productId, input);
 
   const { data: product, error: productError } = await supabase
@@ -373,7 +379,7 @@ export async function sellProduct(
 }
 
 export async function cancelSale(productId: string): Promise<ProductWithSale> {
-  const supabase = createSupabaseClient();
+  const supabase = await getSupabase();
   if (!supabase) return local.cancelSale(productId);
 
   const { error: deleteError } = await supabase

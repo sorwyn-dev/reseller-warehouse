@@ -9,7 +9,7 @@ export function AppHeader() {
           <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white">
             <Package className="h-4 w-4" />
           </span>
-          <span>Ресейл-склад</span>
+          <span>secretwr</span>
         </Link>
         <nav className="flex items-center gap-2 text-sm">
           <Link
@@ -17,6 +17,12 @@ export function AppHeader() {
             className="rounded-lg px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
           >
             Обзор
+          </Link>
+          <Link
+            href="/months"
+            className="rounded-lg px-3 py-2 text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+          >
+            По месяцам
           </Link>
           <Link
             href="/boxes/new"

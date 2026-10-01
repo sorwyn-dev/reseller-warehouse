@@ -27,6 +27,21 @@ export function formatDate(value: string): string {
   }).format(date);
 }
 
+export function formatMonthLabel(year: number, month: number): string {
+  const date = new Date(year, month - 1, 1);
+  return new Intl.DateTimeFormat("ru-RU", {
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+export function monthKeyFromDate(value: string): string {
+  const date = new Date(value.includes("T") ? value : `${value}T00:00:00`);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${year}-${month}`;
+}
+
 export function todayISODate(): string {
   const now = new Date();
   const year = now.getFullYear();

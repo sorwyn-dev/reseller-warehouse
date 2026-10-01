@@ -2,11 +2,12 @@ import type {
   Box,
   BoxFinance,
   DashboardStats,
+  MonthlyStats,
   ProductFinance,
   ProductWithSale,
   UnitCostBreakdown,
 } from "@/lib/types";
-import { roundMoney } from "@/lib/utils";
+import { formatMonthLabel, monthKeyFromDate, roundMoney } from "@/lib/utils";
 
 export function calcShares(
   shippingCost: number,
@@ -211,6 +212,78 @@ export function calcDashboardStats(
     totalRevenue: roundMoney(totalRevenue),
     totalNetProfit: roundMoney(totalNetProfit),
   };
+}
+
+function emptyMonth(key: string): MonthlyStats {
+  const [yearStr, monthStr] = key.split("-");
+  const year = Number(yearStr);
+  const month = Number(monthStr);
+
+  return {
+    key,
+    year,
+    month,
+    label: formatMonthLabel(year, month),
+    revenue: 0,
+    soldCost: 0,
+    saleExpensesTotal: 0,
+    netProfit: 0,
+    soldCount: 0,
+    boxesReceived: 0,
+    purchaseInvested: 0,
+  };
+}
+
+export function calcMonthlyStats(
+  boxes: Array<{
+    box: Pick<Box, "received_at" | "shipping_cost" | "additional_expenses">;
+    products: ProductWithSale[];
+  }>,
+): MonthlyStats[] {
+  const byMonth = new Map<string, MonthlyStats>();
+
+  function ensure(key: string): MonthlyStats {
+    let entry = byMonth.get(key);
+    if (!entry) {
+      entry = emptyMonth(key);
+      byMonth.set(key, entry);
+    }
+    return entry;
+  }
+
+  for (const item of boxes) {
+    const receivedKey = monthKeyFromDate(item.box.received_at);
+    const received = ensure(receivedKey);
+    received.boxesReceived += 1;
+    received.purchaseInvested = roundMoney(
+      received.purchaseInvested +
+        item.products.reduce((sum, product) => sum + product.purchase_price, 0) +
+        item.box.shipping_cost +
+        item.box.additional_expenses,
+    );
+
+    for (const product of item.products) {
+      if (product.status !== "sold" || !product.sale) continue;
+
+      const saleKey = monthKeyFromDate(product.sale.sold_at);
+      const month = ensure(saleKey);
+      month.revenue = roundMoney(month.revenue + product.sale.sale_price);
+      month.soldCost = roundMoney(month.soldCost + product.sale.frozen_unit_cost);
+      month.saleExpensesTotal = roundMoney(
+        month.saleExpensesTotal +
+          product.sale.commission +
+          product.sale.sale_expenses,
+      );
+      month.soldCount += 1;
+      month.netProfit = roundMoney(
+        month.revenue - month.soldCost - month.saleExpensesTotal,
+      );
+    }
+  }
+
+  return Array.from(byMonth.values()).sort((a, b) =>
+    b.key.localeCompare(a.key),
+  );
 }
 
 export function nextBoxNumber(existingNumbers: string[]): string {

@@ -37,15 +37,29 @@ export default async function HomePage() {
         </Link>
       </section>
 
-      {!isSupabaseConfigured() ? (
+      {isSupabaseConfigured() ? (
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900">
+          Supabase подключён. Если таблицы ещё не созданы, выполните SQL из{" "}
+          <code className="rounded bg-emerald-100 px-1">supabase/migrations/001_initial.sql</code>{" "}
+          в{" "}
+          <a
+            className="underline"
+            href="https://supabase.com/dashboard/project/meexprxlocputrvnpmjk/sql/new"
+            target="_blank"
+            rel="noreferrer"
+          >
+            SQL Editor
+          </a>
+          .
+        </div>
+      ) : (
         <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
           Supabase пока не настроен — данные сохраняются локально в{" "}
           <code className="rounded bg-amber-100 px-1">data/store.json</code>.
-          Чтобы подключить облако, заполните <code className="rounded bg-amber-100 px-1">.env.local</code>{" "}
-          по образцу <code className="rounded bg-amber-100 px-1">.env.example</code> и
-          выполните SQL из <code className="rounded bg-amber-100 px-1">supabase/migrations</code>.
+          Заполните <code className="rounded bg-amber-100 px-1">.env.local</code> по образцу{" "}
+          <code className="rounded bg-amber-100 px-1">.env.example</code>.
         </div>
-      ) : null}
+      )}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard title="Коробок" value={String(stats.boxCount)} />
@@ -68,7 +82,9 @@ export default async function HomePage() {
       <section className="space-y-4">
         <div className="flex items-center justify-between gap-3">
           <h2 className="text-lg font-semibold text-slate-900">Последние коробки</h2>
-          <span className="text-sm text-slate-500">{boxes.length} всего</span>
+          <Link href="/months" className="text-sm text-slate-500 hover:text-slate-800">
+            Дашборд по месяцам →
+          </Link>
         </div>
 
         {recentBoxes.length === 0 ? (
