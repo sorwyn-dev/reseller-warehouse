@@ -286,6 +286,50 @@ export function calcMonthlyStats(
   );
 }
 
+export function calcLastDaysProfit(
+  boxes: Array<{ products: ProductWithSale[] }>,
+  days = 30,
+  now = new Date(),
+): { netProfit: number; revenue: number; soldCount: number } {
+  const end = new Date(now);
+  end.setHours(23, 59, 59, 999);
+
+  const start = new Date(now);
+  start.setHours(0, 0, 0, 0);
+  start.setDate(start.getDate() - (days - 1));
+
+  let revenue = 0;
+  let soldCost = 0;
+  let saleExpensesTotal = 0;
+  let soldCount = 0;
+
+  for (const item of boxes) {
+    for (const product of item.products) {
+      if (product.status !== "sold" || !product.sale) continue;
+
+      const soldAt = new Date(
+        product.sale.sold_at.includes("T")
+          ? product.sale.sold_at
+          : `${product.sale.sold_at}T00:00:00`,
+      );
+
+      if (soldAt < start || soldAt > end) continue;
+
+      revenue += product.sale.sale_price;
+      soldCost += product.sale.frozen_unit_cost;
+      saleExpensesTotal +=
+        product.sale.commission + product.sale.sale_expenses;
+      soldCount += 1;
+    }
+  }
+
+  return {
+    revenue: roundMoney(revenue),
+    soldCount,
+    netProfit: roundMoney(revenue - soldCost - saleExpensesTotal),
+  };
+}
+
 export function nextBoxNumber(existingNumbers: string[]): string {
   let max = 0;
 

@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { listBoxes } from "@/lib/data/repository";
-import { calcMonthlyStats } from "@/lib/finance";
+import { calcLastDaysProfit, calcMonthlyStats } from "@/lib/finance";
 import { formatEuro } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Money, StatCard } from "@/components/stat-card";
@@ -14,9 +14,9 @@ function capitalize(label: string): string {
 
 export default async function MonthsPage() {
   const boxes = await listBoxes();
-  const months = calcMonthlyStats(
-    boxes.map((box) => ({ box, products: box.products })),
-  );
+  const mapped = boxes.map((box) => ({ box, products: box.products }));
+  const months = calcMonthlyStats(mapped);
+  const last30 = calcLastDaysProfit(mapped, 30);
 
   const current = months[0] ?? null;
   const totals = months.reduce(
@@ -40,7 +40,7 @@ export default async function MonthsPage() {
         </p>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <StatCard
           title="Выручка за всё время"
           value={formatEuro(totals.revenue)}
@@ -48,6 +48,11 @@ export default async function MonthsPage() {
         <StatCard
           title="Прибыль за всё время"
           value={formatEuro(totals.netProfit)}
+        />
+        <StatCard
+          title="Прибыль за последние 30 дней"
+          value={formatEuro(last30.netProfit)}
+          hint={`Выручка ${formatEuro(last30.revenue)} · продано ${last30.soldCount}`}
         />
         <StatCard title="Продано вещей" value={String(totals.soldCount)} />
         <StatCard

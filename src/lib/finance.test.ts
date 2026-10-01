@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   calcBoxFinance,
   calcDashboardStats,
+  calcLastDaysProfit,
   calcMonthlyStats,
   calcProductProfit,
   calcUnitCost,
@@ -367,6 +368,50 @@ describe("calcMonthlyStats", () => {
     expect(jan.soldCount).toBe(1);
     expect(jan.boxesReceived).toBe(1);
     expect(jan.purchaseInvested).toBe(30);
+  });
+});
+
+describe("calcLastDaysProfit", () => {
+  it("считает прибыль только за последние 30 дней", () => {
+    const now = new Date("2026-10-02T12:00:00");
+    const result = calcLastDaysProfit(
+      [
+        {
+          products: [
+            makeProduct({
+              id: "p1",
+              purchase_price: 10,
+              status: "sold",
+              sale: makeSale({
+                product_id: "p1",
+                sale_price: 40,
+                sold_at: "2026-09-20",
+                commission: 0,
+                sale_expenses: 0,
+                frozen_unit_cost: 10,
+              }),
+            }),
+            makeProduct({
+              id: "p2",
+              purchase_price: 10,
+              status: "sold",
+              sale: makeSale({
+                product_id: "p2",
+                sale_price: 50,
+                sold_at: "2026-08-01",
+                frozen_unit_cost: 10,
+              }),
+            }),
+          ],
+        },
+      ],
+      30,
+      now,
+    );
+
+    expect(result.revenue).toBe(40);
+    expect(result.netProfit).toBe(30);
+    expect(result.soldCount).toBe(1);
   });
 });
 
